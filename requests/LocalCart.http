@@ -1,0 +1,67 @@
+@auth = http://localhost:5001
+@products = http://localhost:5002
+@accessToken = paste-access-token-here
+@productId = paste-product-id-here
+@version = paste-product-version-here
+
+### Register seller
+POST {{auth}}/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "firstName": "Ada",
+  "lastName": "Lovelace",
+  "email": "ada@example.com",
+  "password": "StrongPass123",
+  "role": "Seller"
+}
+
+### Login
+POST {{auth}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "ada@example.com",
+  "password": "StrongPass123"
+}
+
+### List categories
+GET {{products}}/api/v1/categories
+
+### Create product - use a category id returned above
+POST {{products}}/api/v1/products
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "categoryId": "10000000-0000-0000-0000-000000000001",
+  "name": "Ceramic Bowl",
+  "slug": "ceramic-bowl",
+  "description": "A handmade ceramic bowl.",
+  "price": 199.90,
+  "currency": "TRY",
+  "stockQuantity": 10,
+  "imageUrl": "https://images.example.com/ceramic-bowl.webp",
+  "status": "Published"
+}
+
+### Filter products
+GET {{products}}/api/v1/products?categoryId=10000000-0000-0000-0000-000000000001&minPrice=100&maxPrice=500&sort=PriceAscending&page=1&pageSize=12
+
+### Update product with optimistic concurrency
+PUT {{products}}/api/v1/products/{{productId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "version": "{{version}}",
+  "categoryId": "10000000-0000-0000-0000-000000000001",
+  "name": "Ceramic Bowl - Large",
+  "slug": "ceramic-bowl-large",
+  "description": "A large handmade ceramic bowl.",
+  "price": 249.90,
+  "currency": "TRY",
+  "stockQuantity": 8,
+  "imageUrl": "https://images.example.com/ceramic-bowl-large.webp",
+  "status": "Published"
+}

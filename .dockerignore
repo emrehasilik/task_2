@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+.git/
+.vs/
+.idea/
+tmp/
+tests/
+*.user
+*.suo
+Full Stack Developer - 2. Aşama Task.pdf
