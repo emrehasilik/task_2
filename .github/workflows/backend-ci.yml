@@ -1,0 +1,91 @@
+name: Backend CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - test/v1.0.0
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+  pull_request:
+    branches:
+      - test/v1.0.0
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "1"
+  NUGET_XMLDOC_MODE: skip
+
+jobs:
+  validate:
+    name: Build, test and audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Scan tracked files for secrets
+        working-directory: .
+        shell: bash
+        run: |
+          pattern='(rediss?://[^[:space:]]+:[^[:space:]@]+@|postgres(ql)?://[^[:space:]]+:[^[:space:]@]+@|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|gho_[A-Za-z0-9]+|gQAAA[A])'
+
+          if files=$(git grep -I -l -E "$pattern" -- . \
+            ':(exclude)backend/.env.example' \
+            ':(exclude)backend/README.md'); then
+            echo "::error::Potential secret found in tracked file(s):"
+            echo "$files"
+            exit 1
+          else
+            status=$?
+            if [ "$status" -ne 1 ]; then
+              exit "$status"
+            fi
+          fi
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore LocalCart.sln
+
+      - name: Build solution
+        run: dotnet build LocalCart.sln --configuration Release --no-restore -m:1
+
+      - name: Run tests with coverage
+        run: >-
+          dotnet test LocalCart.sln
+          --configuration Release
+          --no-build
+          -m:1
+          --collect:"XPlat Code Coverage"
+          --results-directory TestResults
+
+      - name: Audit NuGet dependencies
+        run: dotnet list LocalCart.sln package --vulnerable --include-transitive
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v5
+        with:
+          name: backend-coverage-${{ github.run_id }}
+          path: backend/TestResults/**/coverage.cobertura.xml
+          if-no-files-found: error
+          retention-days: 14

@@ -428,6 +428,19 @@ HTTP integration testleri `WebApplicationFactory` ile gerçek routing, middlewar
 
 > Supabase ve Upstash Redis doğrulaması tamamlandı: Auth ve Product migration’ları gerçek Supabase PostgreSQL veritabanına uygulandı; `identity` ve `catalog` şemaları oluşturuldu. Her iki readiness endpoint’i `200 Healthy` döndü. Kategori sorgusunda gerçek cache miss/hit, JWT’li ürün oluşturma–güncelleme–soft delete akışında ise sürümlü liste cache invalidation davranışı uçtan uca doğrulandı.
 
+## Sürekli entegrasyon
+
+`.github/workflows/backend-ci.yml`, `test/v1.0.0` dalını hedefleyen pull request’lerde ve bu dala yapılan push’larda aşağıdaki kalite kapılarını otomatik çalıştırır:
+
+- İzlenen dosyalarda bağlantı bilgisi, token ve private key imzası taraması
+- .NET bağımlılıklarının geri yüklenmesi
+- Release modunda; kod stili analizini çalıştıran ve uyarıları hata kabul eden solution derlemesi
+- Unit ve HTTP integration testlerinin çalıştırılması
+- Cobertura formatında coverage raporu üretimi ve 14 günlük artifact yüklemesi
+- Doğrudan ve transitif NuGet bağımlılıklarında bilinen güvenlik açığı taraması
+
+CI testleri kontrollü test doubles kullandığından Supabase ve Upstash credential’larına ihtiyaç duymaz. İş akışı salt-okunur repository izniyle, 15 dakikalık zaman aşımıyla ve aynı dalda eski çalışmayı iptal eden concurrency ayarıyla çalışır.
+
 ## EF Core migration işlemleri
 
 Repository yerel `dotnet-ef` aracını manifest üzerinden sabitler:
@@ -471,7 +484,6 @@ Bu karar, yedi günlük görev kapsamında Auth, CQRS, PostgreSQL, Redis, JWT, c
 
 ## Sonraki adımlar
 
-1. GitHub Actions üzerinde restore, build, test ve secret taraması çalıştırmak
-2. Test coverage raporu ve minimum coverage eşiği eklemek
-3. Next.js 14+ App Router frontend’ini geliştirmek
-4. Türkçe/İngilizce `next-intl`, RTK sepet, SSR/ISR ve dinamik SEO metadata eklemek
+1. Coverage için gerçekçi bir başlangıç değeri ölçüp minimum eşik belirlemek
+2. Next.js 14+ App Router frontend’ini geliştirmek
+3. Türkçe/İngilizce `next-intl`, RTK sepet, SSR/ISR ve dinamik SEO metadata eklemek
