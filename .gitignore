@@ -8,6 +8,7 @@
 
 # Local task inputs and generated verification files
 tmp/
+.runtime/
 Full Stack Developer - 2. Aşama Task.pdf
 
 # User-specific files

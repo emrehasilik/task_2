@@ -8,12 +8,12 @@ Bu dokümandaki bütün `dotnet` ve PowerShell komutları repository kökündeki
 cd backend
 ```
 
-Bu repository şu anda backend kapsamını içerir:
+Bu klasör LocalCart backend kapsamını içerir:
 
 - **Auth API:** Kullanıcı kaydı, giriş, JWT access token üretimi, refresh token yenileme ve iptal işlemleri.
 - **Product API:** CQRS tabanlı ürün yönetimi, filtreleme, sıralama, sayfalama, PostgreSQL sorguları ve Redis cache.
 
-Frontend, sonraki geliştirme aşamasında bu API’leri kullanacak şekilde eklenecektir.
+Bu API’leri kullanan Next.js pazaryeri `../frontend` klasöründedir. Tam sistem kurulumu ve rol matrisi için kök [README](../README.md) dosyasına bakın.
 
 ## Projenin amacı
 
@@ -397,10 +397,10 @@ Mevcut backend sürümünde aşağıdaki kontroller başarıyla tamamlanmıştı
 
 - Release build: **0 hata, 0 uyarı**
 - Auth unit testleri: **3/3 başarılı**
-- Product unit testleri: **3/3 başarılı**
+- Product unit testleri: **6/6 başarılı**
 - Auth HTTP integration testleri: **3/3 başarılı**
 - Product HTTP integration testleri: **4/4 başarılı**
-- Toplam test: **13/13 başarılı**
+- Toplam test: **16/16 başarılı**
 - Auth migration SQL üretimi: **başarılı**
 - Product migration SQL üretimi: **başarılı**
 - `pg_trgm` ve GIN indeks SQL doğrulaması: **başarılı**
@@ -418,6 +418,7 @@ Test edilen kritik davranışlar:
 - Ürün oluştururken giriş yapan Seller kimliğinin sahip olarak atanması
 - Ürün oluşturulduğunda liste cache sürümünün artırılması
 - Cache hit durumunda PostgreSQL repository’sine gidilmemesi
+- Redis timeout’unda cache okuma, yazma ve region version işlemlerinin PostgreSQL iş akışını düşürmemesi
 - API live health endpoint’lerinin dış servise ihtiyaç duymadan cevap vermesi
 - Auth register endpoint’inin doğru JSON ve `201 Created` üretmesi
 - JWT bulunmadığında ürün yazma endpoint’inin `401 Unauthorized` dönmesi
@@ -475,15 +476,14 @@ Aşağıdaki özellikler bilinçli olarak ilk backend kapsamına alınmamıştı
 - Sipariş ve ödeme sistemi
 - Favoriler ve ürün yorumları
 - Kupon sistemi
-- Dosya yükleme servisi
 - Message broker
 - Admin frontend paneli
-- Next.js e-ticaret frontend’i
+- Sipariş/ödeme odaklı frontend ekranları
 
-Bu karar, yedi günlük görev kapsamında Auth, CQRS, PostgreSQL, Redis, JWT, cache tutarlılığı ve API kalitesini eksiksiz teslim etmeye odaklanmak için verilmiştir.
+Ürün görselleri mevcut Next.js BFF üzerinden Supabase Storage’a yüklenir; Product Service binary taşımak yerine doğrulanmış public URL’yi saklar. Bu sınır API’yi büyük dosya trafiğinden ayırır.
 
 ## Sonraki adımlar
 
 1. Coverage için gerçekçi bir başlangıç değeri ölçüp minimum eşik belirlemek
-2. Next.js 14+ App Router frontend’ini geliştirmek
-3. Türkçe/İngilizce `next-intl`, RTK sepet, SSR/ISR ve dinamik SEO metadata eklemek
+2. Auth ve Product API’lerini ayrı Render Web Service olarak yayınlamak
+3. OpenTelemetry, merkezi log/metric ve production alarm eşikleri eklemek

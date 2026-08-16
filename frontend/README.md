@@ -32,6 +32,20 @@ LocalCart frontend’i; .NET Auth ve Product servislerini kullanan, Türkçe/İn
 | Ürün yönetimi | Ürün ekleme, düzenleme ve sahiplik kontrollü silme işlemleri desteklenir |
 | Ürün görseli | Satıcı cihazdan JPG/PNG/WebP seçer; dosya Supabase Storage’da, public URL ürünün PostgreSQL kaydında tutulur |
 | Güvenli satıcı BFF | HttpOnly JWT yenilenir ve Product API komutlarına sunucu tarafından aktarılır |
+| Rol ayrımı | Satıcı yalnızca kendi ürün panelini görür; katalog, sepete ekleme ve sepet route’ları satıcıya kapalıdır |
+| Düşük stok | Arşivlenmemiş ürünlerde 1–5 adet düşük stok; 0 adet tükenmiş; 6+ sağlıklı kabul edilir |
+
+## Rol davranışı
+
+| Yetki | Müşteri | Satıcı |
+| --- | --- | --- |
+| Tüm yayınlanmış ürünleri görme | Evet | Alışveriş UI’ında hayır |
+| Sepete ekleme ve sepet sayfası | Evet | Hayır |
+| Satıcı paneli | Hayır | Evet |
+| Panelde gösterilen ürünler | — | Yalnızca JWT sahibinin ürünleri |
+| Ürün ekleme/düzenleme/silme | Hayır | Yalnızca kendi ürünleri |
+
+Satıcı `/`, `/products/*` veya `/cart` route’una giderse locale korunarak `/seller` sayfasına yönlendirilir. Satıcı login olduğunda daha önce müşteri rolünden kalmış yerel sepet temizlenir. Bu kontroller UX katmanıdır; asıl yetkilendirme ve sahiplik Product API tarafından tekrar uygulanır.
 
 ## Dil ve ülke algılama
 
@@ -102,6 +116,10 @@ npm run build
 ```
 
 GitHub Actions, pull request ve `test/v1.0.0` push’larında `npm ci`, production dependency audit, lint, type-check, unit test ve production build adımlarını otomatik çalıştırır.
+
+Vitest; RTK sepeti, locale algılama, form/slug yardımcıları, görsel magic-byte politikası, rol route’ları ve düşük stok sınırlarını kapsar. Tam backend + frontend kurulum sırası, demo hesaplar ve dağıtım planı için kök [README](../README.md) dosyasına bakın.
+
+Son doğrulamada lint ve type-check temiz, **6 test dosyasında 26/26 test** başarılı ve Next.js production build 24 sayfayı hatasız üretmiştir. Production npm audit’inde bilinen açık bulunmamıştır.
 
 ## Önemli route’lar
 
