@@ -1,0 +1,17 @@
+# The Render Docker build uses backend/ as its build context, so it cannot see
+# the repository-root .editorconfig. Keep the backend analyzer policy here too.
+root = true
+
+[*.cs]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+dotnet_sort_system_directives_first = true
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_style_var_when_type_is_apparent = true:suggestion
+
+[**/Migrations/*.cs]
+generated_code = true
+dotnet_diagnostic.CA1861.severity = none
