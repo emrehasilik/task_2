@@ -5,7 +5,16 @@
 
 LocalCart; yerel üreticilerin ürünlerini yönettiği, müşterilerin ise ürünleri arayıp filtreleyerek sepetine ekleyebildiği, Türkçe ve İngilizce çalışan bir pazaryeri uygulamasıdır. Proje yalnızca görev maddelerini karşılamak için değil; servis sınırları, güvenlik, performans, hata toleransı, test edilebilirlik ve SEO birlikte düşünülerek gerçek bir ürün temeli gibi tasarlanmıştır.
 
-> Durum: Uygulama yerel ortamda Supabase PostgreSQL, Supabase Storage ve Upstash Redis ile uçtan uca çalışmaktadır. Vercel ve Render dağıtımı bir sonraki aşamadır; bu depo henüz canlı ortam adresi ilan etmez.
+## Canlı uygulama ve hızlı demo
+
+**Uygulama:** [LocalCart canlı demosunu aç](https://localcart-emrehasilik.vercel.app/tr/login)
+
+| Rol | Email | Parola |
+|---|---|---|
+| Satıcı | `seller.demo@localcart.test` | `LcS!937fa6ca39d846be92f63007f3e7d649` |
+| Müşteri | `customer.demo@localcart.test` | `LcC!9fedc6ffd7d5461cb88ad49eeab90688` |
+
+> Durum: Frontend Vercel’de, Auth ve Product API servisleri Render’da canlıdır. PostgreSQL ve ürün görselleri Supabase, ürün listeleme cache’i Upstash Redis üzerinde çalışmaktadır.
 
 ## İçindekiler
 
