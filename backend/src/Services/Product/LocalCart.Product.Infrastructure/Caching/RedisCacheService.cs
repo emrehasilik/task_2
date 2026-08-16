@@ -39,7 +39,7 @@ internal sealed partial class RedisCacheService(
             LogCacheHit(logger, key);
             return JsonSerializer.Deserialize<T>(value.ToString(), SerializerOptions);
         }
-        catch (RedisException exception)
+        catch (Exception exception) when (IsTransientCacheFailure(exception))
         {
             LogRedisKeyFailure(logger, "read", key, exception);
             return default;
@@ -62,7 +62,7 @@ internal sealed partial class RedisCacheService(
             var json = JsonSerializer.Serialize(value, SerializerOptions);
             await _database.StringSetAsync(Prefix(key), json, expiration).WaitAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (RedisException exception)
+        catch (Exception exception) when (IsTransientCacheFailure(exception))
         {
             LogRedisKeyFailure(logger, "write", key, exception);
         }
@@ -79,7 +79,7 @@ internal sealed partial class RedisCacheService(
         {
             await _database.KeyDeleteAsync(Prefix(key)).WaitAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (RedisException exception)
+        catch (Exception exception) when (IsTransientCacheFailure(exception))
         {
             LogRedisKeyFailure(logger, "delete", key, exception);
         }
@@ -105,7 +105,7 @@ internal sealed partial class RedisCacheService(
                 .WaitAsync(cancellationToken).ConfigureAwait(false);
             return 1;
         }
-        catch (RedisException exception)
+        catch (Exception exception) when (IsTransientCacheFailure(exception))
         {
             LogRedisRegionFailure(logger, "version-read", region, exception);
             return 1;
@@ -125,7 +125,7 @@ internal sealed partial class RedisCacheService(
                 .WaitAsync(cancellationToken).ConfigureAwait(false);
             LogRegionInvalidated(logger, region);
         }
-        catch (RedisException exception)
+        catch (Exception exception) when (IsTransientCacheFailure(exception))
         {
             LogRedisRegionFailure(logger, "invalidation", region, exception);
         }
@@ -143,6 +143,9 @@ internal sealed partial class RedisCacheService(
     }
 
     private string Prefix(string key) => _prefix + key;
+
+    private static bool IsTransientCacheFailure(Exception exception) =>
+        exception is RedisException or TimeoutException;
 
     [LoggerMessage(3001, LogLevel.Debug, "Cache miss for {CacheKey}")]
     private static partial void LogCacheMiss(ILogger logger, string cacheKey);
