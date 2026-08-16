@@ -617,28 +617,53 @@ Table Editor varsayılan olarak `public` şemasını gösterebilir. `identity` v
 
 Önceki 5001, 5002 veya 3000 sürecini kapatıp ilgili servisi yeniden başlatın.
 
-## Dağıtım planı
+## Canlı ortam ve dağıtım
 
-Bir sonraki aşamada:
+| Bileşen | Platform | Canlı adres |
+|---|---|---|
+| Next.js frontend | Vercel Hobby | [localcart-emrehasilik.vercel.app](https://localcart-emrehasilik.vercel.app) |
+| Auth API | Render Free Web Service | [localcart-auth-api-emrehasilik.onrender.com](https://localcart-auth-api-emrehasilik.onrender.com) |
+| Product API | Render Free Web Service | [localcart-product-api-emrehasilik.onrender.com](https://localcart-product-api-emrehasilik.onrender.com) |
+| PostgreSQL ve ürün görselleri | Supabase | Yönetilen PostgreSQL + public `product-images` bucket |
+| Ürün listeleme cache'i | Upstash | TLS üzerinden yönetilen Redis |
 
-- Frontend → **Vercel**
-- Auth API → **Render Web Service**
-- Product API → **Render Web Service**
-- PostgreSQL/Storage → **Supabase**
-- Redis → **Upstash**
+Render servisleri root'taki [`render.yaml`](render.yaml) Blueprint'i ile tanımlanır. Auth ve Product API, aynı backend build context'inden fakat ayrı Dockerfile'lardan üretilir. İmajlar .NET 8 runtime kullanır, `app` isimli root olmayan kullanıcıyla çalışır ve `10000` portunu dinler. `backend/.dockerignore` build context'ini küçültür; `backend/.editorconfig` ise repository kökündeki analyzer politikasını izole Docker context'inde de korur.
 
-Dağıtım kontrol listesi:
+Her API için health check yolu `/health/ready` olarak ayarlanmıştır:
 
-1. Auth/Product için ayrı Render servisleri.
-2. Render’a DB, JWT, Redis ve CORS secret’ları.
-3. Vercel’e API URL’leri, site URL ve Storage secret’ları.
-4. CORS origin’lerini gerçek Vercel domain’iyle güncelleme.
-5. Vercel country header’ıyla locale testi.
-6. Render health path’lerini `/health/ready` yapma (`/health/live` yalnızca proses yaşamını ölçer).
-7. Dağıtımdan önce tüm credential’ları rotate etme.
-8. Canlı smoke test: auth, seller upload/CRUD, customer catalog/cart, tr/en SEO.
+- Auth readiness, Supabase PostgreSQL erişimini doğrular.
+- Product readiness, PostgreSQL ve Upstash Redis erişimini birlikte doğrular.
+- `/health/live` yalnızca prosesin cevap verdiğini ölçer; bağımlılık sağlığını ölçmez.
 
-Deploy dosyaları ve canlı URL’ler platform ayarları doğrulandıktan sonra ayrı commit olacaktır.
+Frontend Vercel'de repository'nin `frontend` kök dizininden, Next.js preset'iyle oluşturulur. Production ortamında kullanılan değişkenler:
+
+- `AUTH_API_URL`
+- `PRODUCT_API_URL`
+- `NEXT_PUBLIC_SITE_URL`
+- `NEXT_PUBLIC_IMAGE_HOSTS`
+- `SUPABASE_URL`
+- `SUPABASE_SECRET_KEY`
+- `SUPABASE_PRODUCT_IMAGES_BUCKET`
+
+Render'da PostgreSQL bağlantı dizesi, ortak JWT imza anahtarı ve Redis kimlik bilgileri `sync: false` environment değerleri olarak saklanır; gerçek değerler `render.yaml` veya Git geçmişine girmez. İki API'nin CORS allowlist'i canlı Vercel origin'iyle Infrastructure as Code üzerinden eşleştirilir.
+
+İlk canlı dağıtımda doğrulanan sonuçlar:
+
+- Auth `/health/ready`: HTTP `200`
+- Product `/health/ready`: HTTP `200`
+- Product katalog sorgusu: HTTP `200`, Supabase'den 5 demo ürün
+- Türkçe frontend ana sayfası: HTTP `200`, LocalCart içeriği render edildi
+
+Render Free servisleri boşta kaldığında uykuya geçebilir. İlk istek bu nedenle yaklaşık 50 saniyeye kadar gecikebilir; bu uygulama hatası değil, ücretsiz instance davranışıdır. Sonraki istekler servis sıcakken normal yanıt süresine döner.
+
+Yeni bir ortamı yeniden dağıtmak için:
+
+1. `test/v1.0.0` dalını GitHub'a gönderin.
+2. Render'da Blueprint'i `render.yaml` üzerinden senkronize edin; GitHub App bağlı değilse iki serviste **Manual Deploy → Deploy latest commit** kullanın.
+3. Vercel projesinde Root Directory'yi `frontend`, Framework Preset'i `Next.js` seçin.
+4. Yukarıdaki environment değişkenlerini platform secret store'una girin.
+5. Vercel production domain'ini `render.yaml` içindeki iki CORS origin'iyle eşleştirip Blueprint'i tekrar senkronize edin.
+6. İki readiness URL'sini, katalog sorgusunu ve `/tr` ile `/en` frontend rotalarını smoke test edin.
 
 ## Sonraki geliştirmeler
 

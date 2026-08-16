@@ -24,7 +24,7 @@ services:
       - key: Jwt__SigningKey
         sync: false
       - key: Cors__Origins__0
-        sync: false
+        value: https://localcart-emrehasilik.vercel.app
 
   - type: web
     name: localcart-product-api-emrehasilik
@@ -51,7 +51,7 @@ services:
       - key: Jwt__SigningKey
         sync: false
       - key: Cors__Origins__0
-        sync: false
+        value: https://localcart-emrehasilik.vercel.app
       - key: Redis__Endpoint
         sync: false
       - key: Redis__Port
