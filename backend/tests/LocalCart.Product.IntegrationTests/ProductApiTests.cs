@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using LocalCart.Product.Application.Products;
 using LocalCart.Product.Application.Products.Commands.CreateProduct;
+using LocalCart.Product.Application.Products.Queries.GetSellerProductById;
 using LocalCart.Product.Domain.Products;
 using Moq;
 
@@ -80,6 +81,52 @@ public sealed class ProductApiTests(ProductApiFactory factory) : IClassFixture<P
         Assert.NotNull(body);
         Assert.Equal(productId, body.Id);
         Assert.Equal(new Uri($"http://localhost/api/v1/products/{productId}"), response.Headers.Location);
+    }
+
+    [Fact]
+    public async Task GetOwnedDraftProductWithSellerTokenReturnsDraft()
+    {
+        var productId = Guid.NewGuid();
+        var sellerId = Guid.NewGuid();
+        factory.Sender
+            .Setup(sender => sender.Send(
+                It.Is<GetSellerProductByIdQuery>(query => query.Id == productId),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ProductResponse(
+                productId,
+                sellerId,
+                CategoryId,
+                "Handmade",
+                "Draft Bowl",
+                "draft-bowl",
+                "A draft product owned by the authenticated seller.",
+                149.90m,
+                "TRY",
+                3,
+                "https://images.example.com/draft-bowl.webp",
+                ProductStatus.Draft,
+                DateTimeOffset.UtcNow,
+                DateTimeOffset.UtcNow,
+                Guid.NewGuid()));
+        using var client = CreateAuthenticatedClient("Seller");
+
+        var response = await client.GetAsync($"/api/v1/products/mine/{productId}");
+        var body = await response.Content.ReadFromJsonAsync<ProductResponse>(JsonOptions);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(body);
+        Assert.Equal(productId, body.Id);
+        Assert.Equal(ProductStatus.Draft, body.Status);
+    }
+
+    [Fact]
+    public async Task GetOwnedProductWithCustomerTokenReturnsForbidden()
+    {
+        using var client = CreateAuthenticatedClient("Customer");
+
+        var response = await client.GetAsync($"/api/v1/products/mine/{Guid.NewGuid()}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     private HttpClient CreateAuthenticatedClient(string role)

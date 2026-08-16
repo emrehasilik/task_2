@@ -21,6 +21,10 @@ public interface IProductReadRepository
         int page,
         int pageSize,
         CancellationToken cancellationToken);
+    Task<ProductResponse?> GetSellerProductByIdAsync(
+        Guid id,
+        Guid sellerId,
+        CancellationToken cancellationToken);
     Task<ProductResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
     Task<IReadOnlyList<CategoryResponse>> GetCategoriesAsync(CancellationToken cancellationToken);
 }

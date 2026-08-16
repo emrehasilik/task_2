@@ -375,6 +375,7 @@ Aynı akış hazır isteklerle [requests/LocalCart.http](requests/LocalCart.http
 | `GET` | `/api/v1/products` | Public | Cache’li, filtrelenebilir ürün listesi |
 | `GET` | `/api/v1/products/{id}` | Public | Cache’li ürün detayı |
 | `GET` | `/api/v1/products/mine` | Seller | Giriş yapan satıcının ürünleri |
+| `GET` | `/api/v1/products/mine/{id}` | Seller | Satıcının taslaklar dahil sahip olduğu tek ürün |
 | `POST` | `/api/v1/products` | Seller/Admin | Ürün oluşturma Command’ı |
 | `PUT` | `/api/v1/products/{id}` | Sahibi/Admin | Ürün güncelleme Command’ı |
 | `DELETE` | `/api/v1/products/{id}?version=...` | Sahibi/Admin | Soft delete Command’ı |

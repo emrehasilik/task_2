@@ -466,6 +466,7 @@ Test senaryosu:
 | GET | `/api/v1/products` | Public | Cache’li filtre/sıralama/sayfalama |
 | GET | `/api/v1/products/{id}` | Public | Cache’li detay |
 | GET | `/api/v1/products/mine` | Seller | JWT sahibinin ürünleri |
+| GET | `/api/v1/products/mine/{id}` | Seller | JWT sahibi satıcının taslaklar dahil tek ürün detayı |
 | POST | `/api/v1/products` | Seller/Admin | Ürün oluşturma |
 | PUT | `/api/v1/products/{id}` | Sahibi/Admin | Güncelleme |
 | DELETE | `/api/v1/products/{id}?version=...` | Sahibi/Admin | Soft delete |

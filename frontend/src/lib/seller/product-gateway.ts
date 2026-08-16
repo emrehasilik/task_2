@@ -103,7 +103,7 @@ export async function getOwnedProduct(
 > {
   const response = await productApiFetch(
     accessToken,
-    `/api/v1/products/${encodeURIComponent(id)}`,
+    `/api/v1/products/mine/${encodeURIComponent(id)}`,
   );
   if (!response.ok) return { ok: false, response };
 

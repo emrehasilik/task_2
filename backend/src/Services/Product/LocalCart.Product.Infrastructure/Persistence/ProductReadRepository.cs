@@ -78,6 +78,14 @@ internal sealed class ProductReadRepository(ProductDbContext dbContext) : IProdu
                     (product.Status == ProductStatus.Published || product.Status == ProductStatus.OutOfStock)))
             .SingleOrDefaultAsync(cancellationToken);
 
+    public Task<ProductResponse?> GetSellerProductByIdAsync(
+        Guid id,
+        Guid sellerId,
+        CancellationToken cancellationToken) =>
+        Project(dbContext.Products.AsNoTracking()
+                .Where(product => product.Id == id && product.SellerId == sellerId))
+            .SingleOrDefaultAsync(cancellationToken);
+
     public async Task<IReadOnlyList<CategoryResponse>> GetCategoriesAsync(CancellationToken cancellationToken) =>
         await dbContext.Categories.AsNoTracking()
             .Where(category => category.IsActive)

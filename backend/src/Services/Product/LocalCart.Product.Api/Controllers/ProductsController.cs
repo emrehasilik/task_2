@@ -4,6 +4,7 @@ using LocalCart.Product.Application.Products.Commands.DeleteProduct;
 using LocalCart.Product.Application.Products.Commands.UpdateProduct;
 using LocalCart.Product.Application.Products.Queries.GetProductById;
 using LocalCart.Product.Application.Products.Queries.GetProducts;
+using LocalCart.Product.Application.Products.Queries.GetSellerProductById;
 using LocalCart.Product.Application.Products.Queries.GetSellerProducts;
 using LocalCart.Product.Domain.Products;
 using MediatR;
@@ -50,6 +51,15 @@ public sealed class ProductsController(ISender sender) : ControllerBase
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default) =>
         Ok(await sender.Send(new GetSellerProductsQuery(page, pageSize), cancellationToken));
+
+    [HttpGet("mine/{id:guid}")]
+    [Authorize(Policy = "SellerOnly")]
+    [ProducesResponseType<ProductResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ProductResponse>> GetMineById(
+        Guid id,
+        CancellationToken cancellationToken) =>
+        Ok(await sender.Send(new GetSellerProductByIdQuery(id), cancellationToken));
 
     [HttpPost]
     [Authorize(Policy = "ProductManager")]
