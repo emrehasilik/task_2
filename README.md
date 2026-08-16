@@ -429,14 +429,14 @@ npm run dev
 
 ## Demo hesaplar
 
-Uçtan uca rol testi için iki sentetik hesap kullanılır:
+Uçtan uca rol testi için yalnızca değerlendirme amacıyla oluşturulmuş iki sentetik hesap kullanılır. [Canlı uygulamayı açın](https://localcart-emrehasilik.vercel.app/tr/login) ve aşağıdaki bilgilerle giriş yapın:
 
-| Rol | Email | Beklenen başlangıç sayfası |
-|---|---|---|
-| Satıcı | `seller.demo@localcart.test` | `/tr/seller` |
-| Müşteri | `customer.demo@localcart.test` | `/tr/products` |
+| Rol | Email | Parola | Beklenen başlangıç sayfası |
+|---|---|---|---|
+| Satıcı | `seller.demo@localcart.test` | `LcS!937fa6ca39d846be92f63007f3e7d649` | `/tr/seller` |
+| Müşteri | `customer.demo@localcart.test` | `LcC!9fedc6ffd7d5461cb88ad49eeab90688` | `/tr/products` |
 
-Parolalar Git’e yazılmaz. Yerel doğrulamada kullanılan bilgiler yalnızca ignore edilen `.runtime/demo-accounts.txt` dosyasında tutulur. Canlı demoda parola değerlendiriciye güvenli kanaldan paylaşılmalı veya özel demo giriş akışı hazırlanmalıdır.
+Bu hesaplar gerçek kullanıcı verisi içermez ve yalnızca canlı demo/değerlendirme akışı içindir. Satıcı hesabı ürün yönetimi yetkilerini, müşteri hesabı ise katalog, filtreleme ve sepet akışını göstermek üzere ayrı tutulur.
 
 Her iki hesap da Supabase üzerinde oluşturulmuş ve yerel E2E smoke testinden geçirilmiştir. Demo müşteriyle eklenen sepet ürünü TR → EN dil geçişinde korunmuş; müşteri `/seller`, satıcı ise `/products` ve `/cart` route’larına erişememiştir.
 
