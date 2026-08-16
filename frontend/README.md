@@ -61,7 +61,13 @@ Ortam dosyasını hazırlayın:
 Copy-Item .env.example .env.local
 ```
 
-Supabase Dashboard’da **Storage → New bucket** adımlarını izleyip `product-images` adında public bir bucket oluşturun. Bucket için en fazla 5 MB dosya boyutu ve `image/jpeg`, `image/png`, `image/webp` MIME türlerini tanımlayın. Ardından **Project Settings → API Keys** ekranından yalnızca sunucuda kullanılacak bir secret key oluşturup `.env.local` dosyasındaki `SUPABASE_SECRET_KEY` alanına yazın. Secret key’i tarayıcı koduna, `NEXT_PUBLIC_` değişkenine veya Git’e eklemeyin.
+Supabase Dashboard’da **Storage → New bucket** adımlarını izleyip `product-images` adında public bir bucket oluşturun. Bucket için en fazla 5 MB dosya boyutu ve `image/jpeg`, `image/png`, `image/webp` MIME türlerini tanımlayın. Ardından **Project Settings → API Keys** ekranından yalnızca sunucuda kullanılacak secret key’i kopyalayıp aşağıdaki komutu çalıştırın:
+
+```powershell
+.\scripts\Configure-StorageSecret.ps1
+```
+
+Script anahtarı panodan alarak Git tarafından izlenmeyen `.env.local` dosyasına kaydeder ve ekrana yazdırmaz. Secret key’i tarayıcı koduna, `NEXT_PUBLIC_` değişkenine veya Git’e eklemeyin.
 
 Bağımlılıkları kurup uygulamayı başlatın:
 

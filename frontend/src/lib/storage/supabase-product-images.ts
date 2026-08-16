@@ -1,7 +1,5 @@
 import "server-only";
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-
 import {
   hasValidProductImageSignature,
   isProductImageMimeType,
@@ -34,8 +32,8 @@ export type UploadedProductImage = {
 
 type StorageConfig = {
   bucket: string;
-  client: SupabaseClient;
   origin: string;
+  secretKey: string;
 };
 
 export async function uploadProductImage(
@@ -47,28 +45,31 @@ export async function uploadProductImage(
   const sellerPath = safeSellerPath(sellerId);
   const objectPath = `${sellerPath}/${crypto.randomUUID()}.${extension}`;
 
-  const { error } = await config.client.storage.from(config.bucket).upload(objectPath, file, {
-    cacheControl: "31536000",
-    contentType: file.type,
-    upsert: false,
+  const response = await fetch(storageObjectUrl(config, objectPath), {
+    method: "POST",
+    headers: storageHeaders(config, {
+      "Cache-Control": "max-age=31536000",
+      "Content-Type": file.type,
+      "x-upsert": "false",
+    }),
+    body: file,
+    signal: AbortSignal.timeout(15_000),
   });
 
-  if (error) {
+  if (!response.ok) {
     console.error("Supabase product image upload failed", {
-      message: error.message,
       sellerId,
+      status: response.status,
     });
     throw new ProductImageStorageError("STORAGE_UPLOAD_FAILED", 502);
   }
 
-  const { data } = config.client.storage.from(config.bucket).getPublicUrl(objectPath);
-  return { objectPath, publicUrl: data.publicUrl };
+  return { objectPath, publicUrl: publicObjectUrl(config, objectPath) };
 }
 
 export async function removeUploadedProductImage(objectPath: string) {
   const config = getStorageConfig();
-  const { error } = await config.client.storage.from(config.bucket).remove([objectPath]);
-  if (error) throw error;
+  await removeObjects(config, [objectPath]);
 }
 
 export async function removeProductImageByUrl(imageUrl: string, sellerId: string) {
@@ -76,8 +77,7 @@ export async function removeProductImageByUrl(imageUrl: string, sellerId: string
   const objectPath = ownedObjectPath(imageUrl, sellerId, config);
   if (!objectPath) return false;
 
-  const { error } = await config.client.storage.from(config.bucket).remove([objectPath]);
-  if (error) throw error;
+  await removeObjects(config, [objectPath]);
   return true;
 }
 
@@ -123,15 +123,53 @@ function getStorageConfig(): StorageConfig {
 
   return {
     bucket,
-    client: createClient(url.origin, secretKey, {
-      auth: {
-        autoRefreshToken: false,
-        detectSessionInUrl: false,
-        persistSession: false,
-      },
-    }),
     origin: url.origin,
+    secretKey,
   };
+}
+
+async function removeObjects(config: StorageConfig, objectPaths: string[]) {
+  const response = await fetch(
+    `${config.origin}/storage/v1/object/${encodeURIComponent(config.bucket)}`,
+    {
+      method: "DELETE",
+      headers: storageHeaders(config, { "Content-Type": "application/json" }),
+      body: JSON.stringify({ prefixes: objectPaths }),
+      signal: AbortSignal.timeout(10_000),
+    },
+  );
+  if (!response.ok) {
+    throw new Error(`Supabase Storage delete failed with status ${response.status}.`);
+  }
+}
+
+function storageHeaders(config: StorageConfig, additional: Record<string, string>) {
+  const headers: Record<string, string> = {
+    // New sb_secret keys are API keys, not JWTs. Sending one as a Bearer token
+    // makes the Storage gateway reject it as an invalid compact JWS.
+    apikey: config.secretKey,
+    ...additional,
+  };
+
+  // Legacy service_role keys are JWTs and still require an Authorization header.
+  // This keeps existing Supabase projects compatible while preferring sb_secret keys.
+  if (!config.secretKey.startsWith("sb_secret_")) {
+    headers.Authorization = `Bearer ${config.secretKey}`;
+  }
+
+  return headers;
+}
+
+function storageObjectUrl(config: StorageConfig, objectPath: string) {
+  return `${config.origin}/storage/v1/object/${encodeURIComponent(config.bucket)}/${encodeObjectPath(objectPath)}`;
+}
+
+function publicObjectUrl(config: StorageConfig, objectPath: string) {
+  return `${config.origin}/storage/v1/object/public/${encodeURIComponent(config.bucket)}/${encodeObjectPath(objectPath)}`;
+}
+
+function encodeObjectPath(objectPath: string) {
+  return objectPath.split("/").map(encodeURIComponent).join("/");
 }
 
 function ownedObjectPath(imageUrl: string, sellerId: string, config: StorageConfig) {
