@@ -1,0 +1,66 @@
+services:
+  - type: web
+    name: localcart-auth-api-emrehasilik
+    runtime: docker
+    plan: free
+    region: frankfurt
+    branch: test/v1.0.0
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile.auth
+    healthCheckPath: /health/ready
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+        value: "true"
+      - key: Database__ApplyMigrationsOnStartup
+        value: "true"
+      - key: ConnectionStrings__MarketplaceDatabase
+        sync: false
+      - key: Jwt__Issuer
+        value: LocalCart.Auth
+      - key: Jwt__Audience
+        value: LocalCart.Clients
+      - key: Jwt__SigningKey
+        sync: false
+      - key: Cors__Origins__0
+        sync: false
+
+  - type: web
+    name: localcart-product-api-emrehasilik
+    runtime: docker
+    plan: free
+    region: frankfurt
+    branch: test/v1.0.0
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile.product
+    healthCheckPath: /health/ready
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+        value: "true"
+      - key: Database__ApplyMigrationsOnStartup
+        value: "true"
+      - key: ConnectionStrings__MarketplaceDatabase
+        sync: false
+      - key: Jwt__Issuer
+        value: LocalCart.Auth
+      - key: Jwt__Audience
+        value: LocalCart.Clients
+      - key: Jwt__SigningKey
+        sync: false
+      - key: Cors__Origins__0
+        sync: false
+      - key: Redis__Endpoint
+        sync: false
+      - key: Redis__Port
+        value: "6379"
+      - key: Redis__User
+        value: default
+      - key: Redis__Password
+        sync: false
+      - key: Redis__UseSsl
+        value: "true"
+      - key: Redis__InstanceName
+        value: localcart
