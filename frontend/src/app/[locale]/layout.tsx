@@ -4,8 +4,10 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { RoleRouteGuard } from "@/components/auth/role-route-guard";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
+import { AuthSessionProvider } from "@/components/providers/auth-session-provider";
 import { CartPersistence } from "@/components/providers/cart-persistence";
 import { StoreProvider } from "@/components/providers/store-provider";
 import { getSiteUrl } from "@/lib/api/config";
@@ -78,19 +80,21 @@ export default async function LocaleLayout({ children, params }: Props) {
       <body className="flex min-h-screen flex-col bg-paper text-ink antialiased">
         <NextIntlClientProvider messages={messages}>
           <StoreProvider>
-            <CartPersistence>
-              <a
-                href="#main-content"
-                className="fixed left-4 top-4 z-[100] -translate-y-24 rounded-full bg-ink px-4 py-2 text-sm font-bold text-white transition-transform focus:translate-y-0"
-              >
-                {(messages.Common as { skip: string }).skip}
-              </a>
-              <Header />
-              <main id="main-content" className="flex-1">
-                {children}
-              </main>
-              <Footer />
-            </CartPersistence>
+            <AuthSessionProvider>
+              <CartPersistence>
+                <a
+                  href="#main-content"
+                  className="fixed left-4 top-4 z-[100] -translate-y-24 rounded-full bg-ink px-4 py-2 text-sm font-bold text-white transition-transform focus:translate-y-0"
+                >
+                  {(messages.Common as { skip: string }).skip}
+                </a>
+                <Header />
+                <main id="main-content" className="flex-1">
+                  <RoleRouteGuard>{children}</RoleRouteGuard>
+                </main>
+                <Footer />
+              </CartPersistence>
+            </AuthSessionProvider>
           </StoreProvider>
         </NextIntlClientProvider>
       </body>

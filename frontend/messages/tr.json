@@ -20,7 +20,8 @@
     "logout": "Çıkış yap",
     "menu": "Menüyü aç",
     "home": "Ana sayfa",
-    "sellerDashboard": "Satıcı paneli"
+    "sellerDashboard": "Satıcı paneli",
+    "sellerProducts": "Ürünlerim"
   },
   "Language": {
     "label": "Dil seçimi",
@@ -96,7 +97,9 @@
     "delivery": "Satıcıdan doğrudan gönderim",
     "description": "Ürün açıklaması",
     "notFoundTitle": "Ürün bulunamadı",
-    "notFoundDescription": "Bu ürün kaldırılmış veya bağlantı değişmiş olabilir."
+    "notFoundDescription": "Bu ürün kaldırılmış veya bağlantı değişmiş olabilir.",
+    "sellerCartDisabled": "Satıcı hesapları alışveriş sepeti kullanamaz. Ürünlerinizi satıcı panelinden yönetebilirsiniz.",
+    "sellerDashboardLink": "Satıcı paneline dön"
   },
   "Cart": {
     "eyebrow": "Alışveriş sepeti",

@@ -16,6 +16,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Link } from "@/i18n/navigation";
 import { formatCurrency } from "@/lib/format";
+import { isLowStock } from "@/lib/seller/stock-policy";
 import type { PagedResult, Product, ProductStatus } from "@/types/api";
 
 import { ProductImage } from "../products/product-image";
@@ -77,9 +78,7 @@ export function SellerDashboard() {
     () => ({
       published: result.items.filter((product) => product.status === "Published").length,
       drafts: result.items.filter((product) => product.status === "Draft").length,
-      lowStock: result.items.filter(
-        (product) => product.status !== "Archived" && product.stockQuantity <= 5,
-      ).length,
+      lowStock: result.items.filter(isLowStock).length,
     }),
     [result.items],
   );

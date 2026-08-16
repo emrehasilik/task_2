@@ -3,14 +3,19 @@
 import { ShoppingBag } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { useAuthSession } from "@/components/providers/auth-session-provider";
 import { Link } from "@/i18n/navigation";
+import { isSellerRole } from "@/lib/auth/role-access";
 import { useAppSelector } from "@/store/hooks";
 
 export function CartLink() {
   const t = useTranslations("Nav");
+  const { status, user } = useAuthSession();
   const count = useAppSelector((state) =>
     state.cart.items.reduce((sum, item) => sum + item.quantity, 0),
   );
+
+  if (status === "loading" || isSellerRole(user?.role)) return null;
 
   return (
     <Link

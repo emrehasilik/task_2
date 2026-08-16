@@ -2,49 +2,23 @@
 
 import { LayoutDashboard, LogOut, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
 
+import { useAuthSession } from "@/components/providers/auth-session-provider";
 import { Link, useRouter } from "@/i18n/navigation";
-import type { User } from "@/types/api";
 
 export function AuthMenu() {
   const t = useTranslations("Nav");
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let active = true;
-    function loadSession() {
-      setLoading(true);
-      fetch("/api/auth/session", { cache: "no-store" })
-        .then(async (response) => (response.ok ? ((await response.json()) as User) : null))
-        .then((session) => {
-          if (active) setUser(session);
-        })
-        .catch(() => undefined)
-        .finally(() => {
-          if (active) setLoading(false);
-        });
-    }
-
-    loadSession();
-    window.addEventListener("localcart:auth-changed", loadSession);
-
-    return () => {
-      active = false;
-      window.removeEventListener("localcart:auth-changed", loadSession);
-    };
-  }, []);
+  const { status, user } = useAuthSession();
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
-    setUser(null);
     window.dispatchEvent(new Event("localcart:auth-changed"));
+    router.replace("/login");
     router.refresh();
   }
 
-  if (loading) {
+  if (status === "loading") {
     return <div className="h-10 w-24 animate-pulse rounded-full bg-sage/70" />;
   }
 

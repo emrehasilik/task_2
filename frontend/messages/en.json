@@ -20,7 +20,8 @@
     "logout": "Sign out",
     "menu": "Open menu",
     "home": "Home",
-    "sellerDashboard": "Seller dashboard"
+    "sellerDashboard": "Seller dashboard",
+    "sellerProducts": "My products"
   },
   "Language": {
     "label": "Language selection",
@@ -96,7 +97,9 @@
     "delivery": "Ships directly from the seller",
     "description": "Product details",
     "notFoundTitle": "Product not found",
-    "notFoundDescription": "This product may have been removed or its link may have changed."
+    "notFoundDescription": "This product may have been removed or its link may have changed.",
+    "sellerCartDisabled": "Seller accounts cannot use the shopping cart. Manage your products from the seller dashboard.",
+    "sellerDashboardLink": "Back to seller dashboard"
   },
   "Cart": {
     "eyebrow": "Shopping cart",
